@@ -3,83 +3,108 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0A101C" />
   <title>Meccha Chameleon Save Editor</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="stylesheet" href="src/styles.css" />
 </head>
 <body>
-  <main class="app">
-    <header class="header">
-      <p class="kicker">Meccha Chameleon</p>
-      <h1>Save Editor</h1>
-      <p>Edit player name, likes received, and players found.</p>
-    </header>
-
-    <section class="card steps-card">
-      <h2>How to use</h2>
-      <div class="steps">
+  <main class="app-shell">
+    <section class="hero-card">
+      <div class="brand-row">
+        <img src="/favicon.svg" alt="" class="brand-mark" />
         <div>
-          <strong>1. Find your save</strong>
-          <p>Open this folder in Windows:</p>
-          <div class="path-row">
-            <code id="saveFolderPath">%LOCALAPPDATA%\Chameleon\Saved\SaveGames</code>
-            <button id="copyPathButton" type="button">Copy</button>
+          <p class="eyebrow">Meccha Chameleon</p>
+          <h1>Save Editor</h1>
+        </div>
+      </div>
+      <p class="hero-copy">Edit your player name, likes received, and players found without uploading your save anywhere.</p>
+    </section>
+
+    <section class="layout-grid">
+      <aside class="card guide-card">
+        <div class="card-heading">
+          <span class="step-badge">1</span>
+          <div>
+            <h2>Find your save</h2>
+            <p>Copy this path into File Explorer.</p>
           </div>
         </div>
-        <div>
-          <strong>2. Edit it here</strong>
-          <p>Choose the <code>.sav</code> file, change the values, then download the edited file.</p>
+        <div class="copy-row">
+          <code id="saveFolderPath">%LOCALAPPDATA%\Chameleon\Saved\SaveGames</code>
+          <button id="copyPathButton" type="button" class="secondary-button">Copy</button>
         </div>
-        <div>
-          <strong>3. Use it in-game</strong>
-          <p>Keep a backup, rename the edited file to the original save name, then replace the old file in the save folder.</p>
+
+        <div class="mini-steps">
+          <div>
+            <span>2</span>
+            <p>Choose the <code>.sav</code> file below.</p>
+          </div>
+          <div>
+            <span>3</span>
+            <p>Edit the values and download the edited save.</p>
+          </div>
+          <div>
+            <span>4</span>
+            <p>Rename the edited file to the original name and replace it in the save folder.</p>
+          </div>
         </div>
-      </div>
-    </section>
+      </aside>
 
-    <section class="card upload-card">
-      <div>
-        <h2>Open save</h2>
-        <p>Choose a Meccha Chameleon <code>.sav</code> file.</p>
-      </div>
-      <label class="file-button">
-        <span>Choose .sav file</span>
-        <input id="fileInput" type="file" accept=".sav,application/octet-stream" />
-      </label>
-    </section>
+      <section class="main-column">
+        <section class="card upload-card">
+          <div class="card-heading">
+            <span class="step-badge">2</span>
+            <div>
+              <h2>Open save</h2>
+              <p>Select your Meccha Chameleon save file.</p>
+            </div>
+          </div>
+          <label class="dropzone">
+            <span class="dropzone-title">Choose .sav file</span>
+            <span class="dropzone-subtitle">The file stays in your browser.</span>
+            <input id="fileInput" type="file" accept=".sav,application/octet-stream" />
+          </label>
+        </section>
 
-    <div id="status" class="status muted">Choose a save file to begin.</div>
+        <div id="status" class="status muted">Choose a save file to begin.</div>
 
-    <section id="editorPanel" class="card editor hidden">
-      <div class="editor-head">
-        <h2>Edit values</h2>
-        <p id="fileName"></p>
-      </div>
+        <section id="editorPanel" class="card editor-card hidden">
+          <div class="editor-header">
+            <div>
+              <p class="eyebrow small">Loaded save</p>
+              <h2>Edit values</h2>
+              <p id="fileName" class="file-name"></p>
+            </div>
+          </div>
 
-      <div class="fields">
-        <label>
-          <span>Player name</span>
-          <input id="playerNameInput" autocomplete="off" />
-          <small id="playerNameHint"></small>
-        </label>
+          <div class="fields">
+            <label class="field-card name-field">
+              <span>Player name</span>
+              <input id="playerNameInput" autocomplete="off" />
+              <small id="playerNameHint"></small>
+            </label>
 
-        <label>
-          <span>Likes received</span>
-          <input id="likesInput" type="number" min="0" step="1" inputmode="numeric" />
-        </label>
+            <label class="field-card">
+              <span>Likes received</span>
+              <input id="likesInput" type="number" min="0" step="1" inputmode="numeric" />
+            </label>
 
-        <label>
-          <span>Players found</span>
-          <input id="playersFoundInput" type="number" min="0" step="1" inputmode="numeric" />
-        </label>
-      </div>
+            <label class="field-card">
+              <span>Players found</span>
+              <input id="playersFoundInput" type="number" min="0" step="1" inputmode="numeric" />
+            </label>
+          </div>
 
-      <div id="fieldProblems" class="problems"></div>
+          <div id="fieldProblems" class="problems"></div>
 
-      <div class="actions">
-        <button id="backupButton" type="button" disabled>Download backup</button>
-        <button id="resetButton" type="button" disabled>Reset</button>
-        <button id="saveButton" type="button" class="primary" disabled>Download edited save</button>
-      </div>
+          <div class="actions">
+            <button id="backupButton" type="button" class="secondary-button" disabled>Download backup</button>
+            <button id="resetButton" type="button" class="secondary-button" disabled>Reset</button>
+            <button id="saveButton" type="button" class="primary-button" disabled>Download edited save</button>
+          </div>
+        </section>
+      </section>
     </section>
   </main>
 
