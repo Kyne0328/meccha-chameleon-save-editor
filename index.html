@@ -39,15 +39,15 @@
         <div class="mini-steps">
           <div>
             <span>2</span>
-            <p>Open <code>SaveGames</code> and select the file that starts with <code>cLeon_Default_</code> and ends with <code>.sav</code>.</p>
+            <p>Open <code>SaveGames</code>. Select the file that starts with <code>cLeon_Default_</code> and ends with <code>.sav</code>, then drag it onto the box below.</p>
           </div>
           <div>
             <span>3</span>
-            <p>Use <strong>Open save directly</strong> in Chrome or Edge, then click <strong>Save directly</strong> after editing.</p>
+            <p>Patch the save while the game is still on the main page.</p>
           </div>
           <div>
             <span>4</span>
-            <p>Go back to the game, join as hunter, and find at least one hider so the game saves the patched values.</p>
+            <p>Replace the file in <code>SaveGames</code>, then join a game as hunter and find at least one hider so the game saves the patched values.</p>
           </div>
         </div>
       </aside>
@@ -58,21 +58,17 @@
             <span class="step-badge">2</span>
             <div>
               <h2>Open save</h2>
-              <p>Direct save works in Chrome and Edge. Drag/drop is still available as a fallback.</p>
+              <p>Select your Meccha Chameleon save file.</p>
             </div>
           </div>
-
-          <button id="openDirectButton" type="button" class="primary-button wide-button">Open save directly</button>
-          <p id="directSupportHint" class="support-hint"></p>
-
           <label id="dropzone" class="dropzone">
-            <span class="dropzone-title">Fallback: drag cLeon_Default_*.sav here</span>
-            <span class="dropzone-subtitle">This mode downloads an edited copy instead of saving directly.</span>
+            <span class="dropzone-title">Drag cLeon_Default_*.sav here</span>
+            <span class="dropzone-subtitle">or click to choose the file manually.</span>
             <input id="fileInput" type="file" accept=".sav,application/octet-stream" />
           </label>
         </section>
 
-        <div id="status" class="status muted">Open a save file to begin.</div>
+        <div id="status" class="status muted">Choose a save file to begin.</div>
 
         <section id="editorPanel" class="card editor-card hidden">
           <div class="editor-header">
@@ -100,8 +96,7 @@
           <div class="actions">
             <button id="backupButton" type="button" class="secondary-button" disabled>Download backup</button>
             <button id="resetButton" type="button" class="secondary-button" disabled>Reset</button>
-            <button id="downloadButton" type="button" class="secondary-button" disabled>Download edited save</button>
-            <button id="saveDirectButton" type="button" class="primary-button" disabled>Save directly</button>
+            <button id="saveButton" type="button" class="primary-button" disabled>Download edited save</button>
           </div>
         </section>
       </section>
