@@ -167,7 +167,8 @@ p { color: var(--muted); line-height: 1.6; margin: 0; }
   text-align: center;
   transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
 }
-.dropzone:hover { transform: translateY(-1px); border-color: rgba(124, 255, 178, 0.78); background-color: rgba(255,255,255,0.055); }
+.dropzone:hover,
+.dropzone.dragging { transform: translateY(-1px); border-color: rgba(124, 255, 178, 0.78); background-color: rgba(124,255,178,0.08); }
 .dropzone-title { font-size: 1.1rem; font-weight: 950; }
 .dropzone-subtitle { color: var(--muted); margin-top: 4px; }
 .dropzone input { margin-top: 14px; max-width: 260px; }

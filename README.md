@@ -10,18 +10,19 @@ A browser save editor for Meccha Chameleon.
 
 ## How to use
 
-1. Open your Meccha Chameleon save folder:
+1. Press Win + R.
+2. Paste this folder path:
 
 ```text
 %LOCALAPPDATA%\Chameleon\Saved\SaveGames
 ```
 
-2. Choose your `.sav` file in the editor.
-3. Change the values.
-4. Download a backup.
-5. Download the edited save.
-6. Rename the edited save to the original save filename.
-7. Replace the old save in the save folder.
+3. Select the save file that starts with cLeon_Default_ and ends with .sav.
+4. Drag the save file onto the editor, or click the upload box and choose it manually.
+5. Change the values.
+6. Click Download backup to keep a copy of the original.
+7. Click Download edited save.
+8. Paste the downloaded save into the save folder and replace the old file.
 
 ## Notes
 

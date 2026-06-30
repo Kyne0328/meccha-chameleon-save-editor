@@ -26,6 +26,7 @@ const state = {
 
 const el = {
   fileInput: document.querySelector('#fileInput'),
+  dropzone: document.querySelector('#dropzone'),
   copyPathButton: document.querySelector('#copyPathButton'),
   saveFolderPath: document.querySelector('#saveFolderPath'),
   status: document.querySelector('#status'),
@@ -42,6 +43,9 @@ const el = {
 };
 
 el.fileInput.addEventListener('change', loadSelectedFile);
+el.dropzone.addEventListener('dragover', onDragOver);
+el.dropzone.addEventListener('dragleave', onDragLeave);
+el.dropzone.addEventListener('drop', onDrop);
 el.copyPathButton.addEventListener('click', copySaveFolderPath);
 el.playerNameInput.addEventListener('input', updateDraftFromInputs);
 el.likesInput.addEventListener('input', updateDraftFromInputs);
@@ -53,12 +57,19 @@ el.saveButton.addEventListener('click', saveEditedFile);
 async function loadSelectedFile() {
   const file = el.fileInput.files?.[0];
   if (!file) return;
+  await loadFile(file);
+}
 
+async function loadFile(file) {
   const loadId = state.loadId + 1;
   state.loadId = loadId;
   setStatus(`Loading ${file.name}...`, 'muted');
 
   try {
+    if (!file.name.startsWith('cLeon_Default_') || !file.name.toLowerCase().endsWith('.sav')) {
+      throw new SaveParseError('Select the save file that starts with cLeon_Default_ and ends with .sav.');
+    }
+
     const bytes = new Uint8Array(await file.arrayBuffer());
     if (loadId !== state.loadId) return;
 
@@ -82,6 +93,24 @@ async function loadSelectedFile() {
   } finally {
     el.fileInput.value = '';
   }
+}
+
+function onDragOver(event) {
+  event.preventDefault();
+  el.dropzone.classList.add('dragging');
+}
+
+function onDragLeave(event) {
+  event.preventDefault();
+  el.dropzone.classList.remove('dragging');
+}
+
+async function onDrop(event) {
+  event.preventDefault();
+  el.dropzone.classList.remove('dragging');
+  const file = event.dataTransfer?.files?.[0];
+  if (!file) return;
+  await loadFile(file);
 }
 
 async function copySaveFolderPath() {
@@ -194,9 +223,9 @@ function saveEditedFile() {
     if (!validation.ok) throw new SaveParseError(validation.errors.join('\n'));
 
     const result = applyRecordEdits(state.originalBytes, state.parsed, collectEdits());
-    const name = state.fileName.replace(/\.sav$/i, '') + '.edited.sav';
+    const name = state.fileName;
     downloadBytes(result.bytes, name, 'application/octet-stream');
-    setStatus(`Downloaded ${name}. Rename it to ${state.fileName} before replacing the old save.`, 'success');
+    setStatus(`Downloaded ${name}. Paste it into the save folder and replace the old file.`, 'success');
   } catch (error) {
     setStatus(error instanceof Error ? error.message : String(error), 'danger');
   }
