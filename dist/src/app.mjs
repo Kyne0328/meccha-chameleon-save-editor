@@ -12,6 +12,7 @@ const FIELD_KEYS = {
 };
 
 const state = {
+  loadId: 0,
   fileName: '',
   originalBytes: null,
   parsed: null,
@@ -25,6 +26,8 @@ const state = {
 
 const el = {
   fileInput: document.querySelector('#fileInput'),
+  copyPathButton: document.querySelector('#copyPathButton'),
+  saveFolderPath: document.querySelector('#saveFolderPath'),
   status: document.querySelector('#status'),
   editorPanel: document.querySelector('#editorPanel'),
   fileName: document.querySelector('#fileName'),
@@ -39,6 +42,7 @@ const el = {
 };
 
 el.fileInput.addEventListener('change', loadSelectedFile);
+el.copyPathButton.addEventListener('click', copySaveFolderPath);
 el.playerNameInput.addEventListener('input', updateDraftFromInputs);
 el.likesInput.addEventListener('input', updateDraftFromInputs);
 el.playersFoundInput.addEventListener('input', updateDraftFromInputs);
@@ -50,8 +54,14 @@ async function loadSelectedFile() {
   const file = el.fileInput.files?.[0];
   if (!file) return;
 
+  const loadId = state.loadId + 1;
+  state.loadId = loadId;
+  setStatus(`Loading ${file.name}...`, 'muted');
+
   try {
     const bytes = new Uint8Array(await file.arrayBuffer());
+    if (loadId !== state.loadId) return;
+
     const parsed = parseMecchaSave(bytes);
     const fields = getRequiredFields(parsed);
 
@@ -66,8 +76,21 @@ async function loadSelectedFile() {
     renderEditor();
     setStatus(`Loaded ${file.name}.`, 'success');
   } catch (error) {
+    if (loadId !== state.loadId) return;
     resetState();
     setStatus(error instanceof Error ? error.message : String(error), 'danger');
+  } finally {
+    el.fileInput.value = '';
+  }
+}
+
+async function copySaveFolderPath() {
+  const path = el.saveFolderPath.textContent.trim();
+  try {
+    await navigator.clipboard.writeText(path);
+    setStatus('Save folder path copied.', 'success');
+  } catch {
+    setStatus(`Copy this path manually: ${path}`, 'muted');
   }
 }
 
@@ -173,7 +196,7 @@ function saveEditedFile() {
     const result = applyRecordEdits(state.originalBytes, state.parsed, collectEdits());
     const name = state.fileName.replace(/\.sav$/i, '') + '.edited.sav';
     downloadBytes(result.bytes, name, 'application/octet-stream');
-    setStatus(`Downloaded ${name}.`, 'success');
+    setStatus(`Downloaded ${name}. Rename it to ${state.fileName} before replacing the old save.`, 'success');
   } catch (error) {
     setStatus(error instanceof Error ? error.message : String(error), 'danger');
   }

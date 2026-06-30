@@ -1,56 +1,30 @@
 # Meccha Chameleon Save Editor
 
-Static save editor for Meccha Chameleon.
+A browser save editor for Meccha Chameleon.
 
-## Fields
+## What it edits
 
-- Player name: `CustomPlayerName`
-- Likes received: `eeyan`
-- Players found: `ME`
+- Player name
+- Likes received
+- Players found
 
-## Deploy to Vercel
+## How to use
 
-1. Push this project to GitHub.
-2. Open Vercel.
-3. Import the GitHub repository.
-4. Use these settings:
-
-```text
-Framework Preset: Other
-Build Command: npm run build
-Output Directory: dist
-Install Command: npm install
-```
-
-5. Deploy.
-
-## Use the app
-
-1. Open the deployed site.
-2. Click **Choose .sav file**.
-3. Select your Meccha Chameleon save file.
-4. Edit the values.
-5. Click **Download backup**.
-6. Click **Download edited save**.
-7. Put the edited save back in the game save folder.
-
-Default save folder on Windows:
+1. Open your Meccha Chameleon save folder:
 
 ```text
 %LOCALAPPDATA%\Chameleon\Saved\SaveGames
 ```
 
-## Local check
-
-```bash
-npm install
-npm run build
-```
-
-The deployable files are generated in `dist`.
+2. Choose your `.sav` file in the editor.
+3. Change the values.
+4. Download a backup.
+5. Download the edited save.
+6. Rename the edited save to the original save filename.
+7. Replace the old save in the save folder.
 
 ## Notes
 
-- The save file is processed in the browser.
-- Websites cannot open a visitor's AppData folder directly.
+- The file is edited in your browser.
 - Player name must stay the same length as the original name.
+- Keep a backup before replacing your save.
