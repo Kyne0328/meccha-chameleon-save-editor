@@ -1,0 +1,18 @@
+{
+  "name": "meccha-savefile-editor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Static Vercel save editor for Meccha Chameleon save files.",
+  "type": "module",
+  "scripts": {
+    "build": "npm run check && node scripts/build-static.mjs",
+    "check": "node --check src/app.mjs && node --check src/saveParser.mjs && node --check scripts/build-static.mjs && node tests/parser.test.mjs",
+    "test": "node tests/parser.test.mjs"
+  },
+  "keywords": [
+    "meccha-chameleon",
+    "save-editor",
+    "vercel"
+  ],
+  "license": "MIT"
+}

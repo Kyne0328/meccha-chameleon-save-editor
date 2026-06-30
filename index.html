@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Meccha Chameleon Save Editor</title>
+  <link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <p class="kicker">Meccha Chameleon</p>
+      <h1>Save Editor</h1>
+      <p>Edit player name, likes received, and players found.</p>
+    </header>
+
+    <section class="card upload-card">
+      <div>
+        <h2>Open save</h2>
+        <p>Select your <code>.sav</code> file. The file is processed in your browser.</p>
+      </div>
+      <label class="file-button">
+        <span>Choose .sav file</span>
+        <input id="fileInput" type="file" accept=".sav,application/octet-stream" />
+      </label>
+    </section>
+
+    <div id="status" class="status muted">Choose a save file to begin.</div>
+
+    <section id="editorPanel" class="card editor hidden">
+      <div class="editor-head">
+        <h2>Edit values</h2>
+        <p id="fileName"></p>
+      </div>
+
+      <div class="fields">
+        <label>
+          <span>Player name</span>
+          <input id="playerNameInput" autocomplete="off" />
+          <small id="playerNameHint"></small>
+        </label>
+
+        <label>
+          <span>Likes received</span>
+          <input id="likesInput" type="number" min="0" step="1" inputmode="numeric" />
+        </label>
+
+        <label>
+          <span>Players found</span>
+          <input id="playersFoundInput" type="number" min="0" step="1" inputmode="numeric" />
+        </label>
+      </div>
+
+      <div id="fieldProblems" class="problems"></div>
+
+      <div class="actions">
+        <button id="backupButton" type="button" disabled>Download backup</button>
+        <button id="resetButton" type="button" disabled>Reset</button>
+        <button id="saveButton" type="button" class="primary" disabled>Download edited save</button>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="src/app.mjs"></script>
+</body>
+</html>
