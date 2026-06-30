@@ -175,6 +175,8 @@ kbd {
 
 .main-column { display: grid; gap: 14px; }
 .upload-card { display: grid; gap: 16px; }
+.wide-button { width: 100%; justify-content: center; }
+.support-hint { color: var(--soft); font-size: 0.95rem; }
 .dropzone {
   position: relative;
   display: grid;
@@ -244,6 +246,9 @@ input:focus {
 .problems div { border: 1px solid rgba(255, 99, 99, 0.28); background: rgba(255, 99, 99, 0.08); border-radius: 14px; padding: 11px 12px; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
 button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid rgba(159, 185, 230, 0.24);
   color: var(--text);
   border-radius: 14px;

@@ -9,9 +9,12 @@ const FIELD_KEYS = {
   playersFound: 'ME',
 };
 
+const supportsFileSystemAccess = 'showOpenFilePicker' in window;
+
 const state = {
   loadId: 0,
   fileName: '',
+  fileHandle: null,
   originalBytes: null,
   parsed: null,
   fields: null,
@@ -24,6 +27,8 @@ const state = {
 const el = {
   fileInput: document.querySelector('#fileInput'),
   dropzone: document.querySelector('#dropzone'),
+  openDirectButton: document.querySelector('#openDirectButton'),
+  directSupportHint: document.querySelector('#directSupportHint'),
   copyPathButton: document.querySelector('#copyPathButton'),
   saveFolderPath: document.querySelector('#saveFolderPath'),
   status: document.querySelector('#status'),
@@ -34,9 +39,11 @@ const el = {
   fieldProblems: document.querySelector('#fieldProblems'),
   backupButton: document.querySelector('#backupButton'),
   resetButton: document.querySelector('#resetButton'),
-  saveButton: document.querySelector('#saveButton'),
+  downloadButton: document.querySelector('#downloadButton'),
+  saveDirectButton: document.querySelector('#saveDirectButton'),
 };
 
+el.openDirectButton.addEventListener('click', openSaveDirectly);
 el.fileInput.addEventListener('change', loadSelectedFile);
 el.dropzone.addEventListener('dragover', onDragOver);
 el.dropzone.addEventListener('dragleave', onDragLeave);
@@ -46,23 +53,58 @@ el.likesInput.addEventListener('input', updateDraftFromInputs);
 el.playersFoundInput.addEventListener('input', updateDraftFromInputs);
 el.backupButton.addEventListener('click', downloadBackup);
 el.resetButton.addEventListener('click', resetDrafts);
-el.saveButton.addEventListener('click', saveEditedFile);
+el.downloadButton.addEventListener('click', downloadEditedFile);
+el.saveDirectButton.addEventListener('click', saveDirectly);
+
+renderFileSystemSupport();
+
+function renderFileSystemSupport() {
+  if (supportsFileSystemAccess) {
+    el.directSupportHint.textContent = 'Recommended: writes back into the same save file. No copy/replace needed.';
+    return;
+  }
+
+  el.openDirectButton.disabled = true;
+  el.directSupportHint.textContent = 'Direct save is only supported in Chrome or Edge. Use the fallback upload/download method in this browser.';
+}
+
+async function openSaveDirectly() {
+  if (!supportsFileSystemAccess) return;
+
+  try {
+    const [handle] = await window.showOpenFilePicker({
+      multiple: false,
+      types: [
+        {
+          description: 'Meccha Chameleon save file',
+          accept: {
+            'application/octet-stream': ['.sav'],
+          },
+        },
+      ],
+    });
+
+    const file = await handle.getFile();
+    await loadFile(file, handle);
+  } catch (error) {
+    if (error?.name === 'AbortError') return;
+    setStatus(error instanceof Error ? error.message : String(error), 'danger');
+  }
+}
 
 async function loadSelectedFile() {
   const file = el.fileInput.files?.[0];
   if (!file) return;
-  await loadFile(file);
+  await loadFile(file, null);
 }
 
-async function loadFile(file) {
+async function loadFile(file, fileHandle) {
   const loadId = state.loadId + 1;
   state.loadId = loadId;
   setStatus(`Loading ${file.name}...`, 'muted');
 
   try {
-    if (!file.name.startsWith('cLeon_Default_') || !file.name.toLowerCase().endsWith('.sav')) {
-      throw new SaveParseError('Select the save file that starts with cLeon_Default_ and ends with .sav.');
-    }
+    validateSaveFileName(file.name);
 
     const bytes = new Uint8Array(await file.arrayBuffer());
     if (loadId !== state.loadId) return;
@@ -71,6 +113,7 @@ async function loadFile(file) {
     const fields = getRequiredFields(parsed);
 
     state.fileName = file.name;
+    state.fileHandle = fileHandle;
     state.originalBytes = bytes;
     state.parsed = parsed;
     state.fields = fields;
@@ -78,13 +121,24 @@ async function loadFile(file) {
     state.draft.playersFound = String(fields.playersFound.int.value);
 
     renderEditor();
-    setStatus(`Loaded ${file.name}.`, 'success');
+    setStatus(
+      fileHandle
+        ? `Loaded ${file.name}. Direct save is available.`
+        : `Loaded ${file.name}. Fallback mode: download the edited file and replace it manually.`,
+      'success',
+    );
   } catch (error) {
     if (loadId !== state.loadId) return;
     resetState();
     setStatus(error instanceof Error ? error.message : String(error), 'danger');
   } finally {
     el.fileInput.value = '';
+  }
+}
+
+function validateSaveFileName(name) {
+  if (!name.startsWith('cLeon_Default_') || !name.toLowerCase().endsWith('.sav')) {
+    throw new SaveParseError('Select the save file that starts with cLeon_Default_ and ends with .sav.');
   }
 }
 
@@ -103,7 +157,7 @@ async function onDrop(event) {
   el.dropzone.classList.remove('dragging');
   const file = event.dataTransfer?.files?.[0];
   if (!file) return;
-  await loadFile(file);
+  await loadFile(file, null);
 }
 
 async function copySaveFolderPath() {
@@ -134,7 +188,9 @@ function getRequiredFields(parsed) {
 
 function renderEditor() {
   el.editorPanel.classList.remove('hidden');
-  el.fileName.textContent = state.fileName;
+  el.fileName.textContent = state.fileHandle
+    ? `${state.fileName} · direct save enabled`
+    : `${state.fileName} · fallback download mode`;
   el.likesInput.value = state.draft.likes;
   el.playersFoundInput.value = state.draft.playersFound;
   updateActions();
@@ -166,10 +222,12 @@ function validateWholeNumber(value, label, errors) {
 function updateActions() {
   const loaded = Boolean(state.fields && state.originalBytes && state.parsed);
   const validation = collectValidation();
+  const canSave = loaded && validation.ok;
 
   el.backupButton.disabled = !loaded;
   el.resetButton.disabled = !loaded;
-  el.saveButton.disabled = !loaded || !validation.ok;
+  el.downloadButton.disabled = !canSave;
+  el.saveDirectButton.disabled = !canSave || !state.fileHandle;
   el.fieldProblems.innerHTML = validation.ok
     ? ''
     : validation.errors.map((error) => `<div>${escapeHtml(error)}</div>`).join('');
@@ -191,20 +249,66 @@ function collectEdits() {
   return edits;
 }
 
-function saveEditedFile() {
-  if (!state.originalBytes || !state.parsed || !state.fileName) return;
+function buildEditedBytes() {
+  const validation = collectValidation();
+  if (!validation.ok) throw new SaveParseError(validation.errors.join('\n'));
+  return applyRecordEdits(state.originalBytes, state.parsed, collectEdits()).bytes;
+}
+
+async function saveDirectly() {
+  if (!state.fileHandle || !state.originalBytes || !state.parsed || !state.fileName) return;
 
   try {
-    const validation = collectValidation();
-    if (!validation.ok) throw new SaveParseError(validation.errors.join('\n'));
+    const editedBytes = buildEditedBytes();
+    const hasPermission = await verifyWritePermission(state.fileHandle);
+    if (!hasPermission) {
+      throw new SaveParseError('Browser permission was denied. Use Download edited save instead.');
+    }
 
-    const result = applyRecordEdits(state.originalBytes, state.parsed, collectEdits());
-    const name = state.fileName;
-    downloadBytes(result.bytes, name, 'application/octet-stream');
-    setStatus(`Downloaded ${name}. Paste it into the save folder and replace the old file.`, 'success');
+    const writable = await state.fileHandle.createWritable();
+    await writable.write(editedBytes);
+    await writable.close();
+    acceptEditedBytes(editedBytes);
+    setStatus(
+      `Saved directly to ${state.fileName}. Go back to the game, join as hunter, and find at least one hider so the game saves the patched values.`,
+      'success',
+    );
   } catch (error) {
     setStatus(error instanceof Error ? error.message : String(error), 'danger');
   }
+}
+
+function downloadEditedFile() {
+  if (!state.originalBytes || !state.parsed || !state.fileName) return;
+
+  try {
+    const editedBytes = buildEditedBytes();
+    downloadBytes(editedBytes, state.fileName, 'application/octet-stream');
+    setStatus(
+      `Downloaded ${state.fileName}. Replace the file in SaveGames, then join as hunter and find at least one hider so the game saves the patched values.`,
+      'success',
+    );
+  } catch (error) {
+    setStatus(error instanceof Error ? error.message : String(error), 'danger');
+  }
+}
+
+async function verifyWritePermission(fileHandle) {
+  const options = { mode: 'readwrite' };
+  if ((await fileHandle.queryPermission(options)) === 'granted') return true;
+  return (await fileHandle.requestPermission(options)) === 'granted';
+}
+
+function acceptEditedBytes(bytes) {
+  const reparsed = parseMecchaSave(bytes);
+  const fields = getRequiredFields(reparsed);
+
+  state.originalBytes = bytes;
+  state.parsed = reparsed;
+  state.fields = fields;
+  state.draft.likes = String(fields.likes.int.value);
+  state.draft.playersFound = String(fields.playersFound.int.value);
+  renderEditor();
 }
 
 function downloadBackup() {
@@ -224,6 +328,7 @@ function resetDrafts() {
 
 function resetState() {
   state.fileName = '';
+  state.fileHandle = null;
   state.originalBytes = null;
   state.parsed = null;
   state.fields = null;
