@@ -76,7 +76,7 @@ async function loadFile(file) {
     state.draft.playersFound = String(fields.playersFound.int.value);
 
     renderEditor();
-    setStatus(`Loaded ${file.name}.`, 'success');
+    setStatus(`Loaded ${file.name}. Edit the values, download the edited save, then replace the old file in SaveGames before finding one hider as hunter.`, 'success');
   } catch (error) {
     if (loadId !== state.loadId) return;
     resetState();
@@ -208,7 +208,7 @@ function saveEditedFile() {
     const editedBytes = buildEditedBytes();
     downloadBytes(editedBytes, state.fileName, 'application/octet-stream');
     setStatus(
-      `Downloaded ${state.fileName}. Replace the file in SaveGames, then join as hunter and find at least one hider so the game saves the patched values.`,
+      `Downloaded ${state.fileName}. Next: replace the old file in SaveGames, return to the game, join as hunter, and find at least one hider.`, 
       'success',
     );
   } catch (error) {

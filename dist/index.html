@@ -21,33 +21,70 @@
       <p class="hero-copy">Edit likes received and players found without uploading your save anywhere.</p>
     </section>
 
+    <section class="card workflow-card">
+      <div class="workflow-title-row">
+        <span class="warning-badge">Important</span>
+        <div>
+          <h2>Cloud-save workflow</h2>
+          <p>Follow these steps in order. The patch works after the game has already downloaded the cloud save.</p>
+        </div>
+      </div>
+
+      <ol class="workflow-list">
+        <li>
+          <strong>Open Meccha Chameleon and stay on the main page.</strong>
+          <span>Do not join a match yet. Wait a few seconds so the cloud save finishes loading.</span>
+        </li>
+        <li>
+          <strong>Open the save folder.</strong>
+          <span>Press <kbd>Win</kbd> + <kbd>R</kbd>, paste the folder path below, then press Enter.</span>
+        </li>
+        <li>
+          <strong>Drag the real save into this site.</strong>
+          <span>Use the file inside <code>SaveGames</code> named <code>cLeon_Default_*.sav</code>.</span>
+        </li>
+        <li>
+          <strong>Edit values, then download the edited save.</strong>
+          <span>The edited download keeps the original filename.</span>
+        </li>
+        <li>
+          <strong>Replace the old file in <code>SaveGames</code>.</strong>
+          <span>Overwrite the original <code>cLeon_Default_*.sav</code> with the edited download.</span>
+        </li>
+        <li>
+          <strong>Go back to the game and force a save.</strong>
+          <span>Join as hunter and find at least one hider. This makes the game save the patched values.</span>
+        </li>
+      </ol>
+    </section>
+
     <section class="layout-grid">
       <aside class="card guide-card">
         <div class="card-heading">
           <span class="step-badge">1</span>
           <div>
-            <h2>Find your save</h2>
+            <h2>Open save folder</h2>
             <div class="hotkey-callout"><kbd>Win</kbd><span>+</span><kbd>R</kbd></div>
-            <p>Open Meccha Chameleon and stay on the main page. Press the keys above, paste this folder path, then press Enter.</p>
+            <p>Paste this path into Run.</p>
           </div>
         </div>
         <div class="copy-row">
           <code id="saveFolderPath">%LOCALAPPDATA%\Chameleon\Saved\SaveGames</code>
-          <button id="copyPathButton" type="button" class="secondary-button">Copy</button>
+          <button id="copyPathButton" type="button" class="secondary-button">Copy path</button>
         </div>
 
         <div class="mini-steps">
           <div>
             <span>2</span>
-            <p>Open <code>SaveGames</code> and select the file that starts with <code>cLeon_Default_</code> and ends with <code>.sav</code>.</p>
+            <p>Find <code>cLeon_Default_*.sav</code> inside <code>SaveGames</code>.</p>
           </div>
           <div>
             <span>3</span>
-            <p>Use <strong>Open save directly</strong> in Chrome or Edge, then click <strong>Save directly</strong> after editing.</p>
+            <p>Drag that file into the upload box on the right.</p>
           </div>
           <div>
             <span>4</span>
-            <p>Go back to the game, join as hunter, and find at least one hider so the game saves the patched values.</p>
+            <p>After downloading the edited file, replace the old file in the same folder.</p>
           </div>
         </div>
       </aside>
@@ -57,22 +94,18 @@
           <div class="card-heading">
             <span class="step-badge">2</span>
             <div>
-              <h2>Open save</h2>
-              <p>Direct save works in Chrome and Edge. Drag/drop is still available as a fallback.</p>
+              <h2>Upload save</h2>
+              <p>Use the <code>cLeon_Default_*.sav</code> file from <code>SaveGames</code>.</p>
             </div>
           </div>
-
-          <button id="openDirectButton" type="button" class="primary-button wide-button">Open save directly</button>
-          <p id="directSupportHint" class="support-hint"></p>
-
           <label id="dropzone" class="dropzone">
-            <span class="dropzone-title">Fallback: drag cLeon_Default_*.sav here</span>
-            <span class="dropzone-subtitle">This mode downloads an edited copy instead of saving directly.</span>
+            <span class="dropzone-title">Drag cLeon_Default_*.sav here</span>
+            <span class="dropzone-subtitle">or click to choose the file manually.</span>
             <input id="fileInput" type="file" accept=".sav,application/octet-stream" />
           </label>
         </section>
 
-        <div id="status" class="status muted">Open a save file to begin.</div>
+        <div id="status" class="status muted">Step 1: Open the game and stay on the main page. Step 2: Drag cLeon_Default_*.sav here.</div>
 
         <section id="editorPanel" class="card editor-card hidden">
           <div class="editor-header">
@@ -100,8 +133,11 @@
           <div class="actions">
             <button id="backupButton" type="button" class="secondary-button" disabled>Download backup</button>
             <button id="resetButton" type="button" class="secondary-button" disabled>Reset</button>
-            <button id="downloadButton" type="button" class="secondary-button" disabled>Download edited save</button>
-            <button id="saveDirectButton" type="button" class="primary-button" disabled>Save directly</button>
+            <button id="saveButton" type="button" class="primary-button" disabled>Download edited save</button>
+          </div>
+
+          <div class="after-save-note">
+            After downloading, replace the old save in <code>SaveGames</code>. Then return to the game, join as hunter, and find at least one hider.
           </div>
         </section>
       </section>
