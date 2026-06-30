@@ -1,12 +1,10 @@
 import {
   SaveParseError,
   applyRecordEdits,
-  canWriteStringSameSize,
   parseMecchaSave,
 } from './saveParser.mjs';
 
 const FIELD_KEYS = {
-  playerName: 'CustomPlayerName',
   likes: 'eeyan',
   playersFound: 'ME',
 };
@@ -18,7 +16,6 @@ const state = {
   parsed: null,
   fields: null,
   draft: {
-    playerName: '',
     likes: '',
     playersFound: '',
   },
@@ -26,13 +23,12 @@ const state = {
 
 const el = {
   fileInput: document.querySelector('#fileInput'),
+  dropzone: document.querySelector('#dropzone'),
   copyPathButton: document.querySelector('#copyPathButton'),
   saveFolderPath: document.querySelector('#saveFolderPath'),
   status: document.querySelector('#status'),
   editorPanel: document.querySelector('#editorPanel'),
   fileName: document.querySelector('#fileName'),
-  playerNameInput: document.querySelector('#playerNameInput'),
-  playerNameHint: document.querySelector('#playerNameHint'),
   likesInput: document.querySelector('#likesInput'),
   playersFoundInput: document.querySelector('#playersFoundInput'),
   fieldProblems: document.querySelector('#fieldProblems'),
@@ -42,8 +38,10 @@ const el = {
 };
 
 el.fileInput.addEventListener('change', loadSelectedFile);
+el.dropzone.addEventListener('dragover', onDragOver);
+el.dropzone.addEventListener('dragleave', onDragLeave);
+el.dropzone.addEventListener('drop', onDrop);
 el.copyPathButton.addEventListener('click', copySaveFolderPath);
-el.playerNameInput.addEventListener('input', updateDraftFromInputs);
 el.likesInput.addEventListener('input', updateDraftFromInputs);
 el.playersFoundInput.addEventListener('input', updateDraftFromInputs);
 el.backupButton.addEventListener('click', downloadBackup);
@@ -53,12 +51,19 @@ el.saveButton.addEventListener('click', saveEditedFile);
 async function loadSelectedFile() {
   const file = el.fileInput.files?.[0];
   if (!file) return;
+  await loadFile(file);
+}
 
+async function loadFile(file) {
   const loadId = state.loadId + 1;
   state.loadId = loadId;
   setStatus(`Loading ${file.name}...`, 'muted');
 
   try {
+    if (!file.name.startsWith('cLeon_Default_') || !file.name.toLowerCase().endsWith('.sav')) {
+      throw new SaveParseError('Select the save file that starts with cLeon_Default_ and ends with .sav.');
+    }
+
     const bytes = new Uint8Array(await file.arrayBuffer());
     if (loadId !== state.loadId) return;
 
@@ -69,7 +74,6 @@ async function loadSelectedFile() {
     state.originalBytes = bytes;
     state.parsed = parsed;
     state.fields = fields;
-    state.draft.playerName = fields.playerName.string.value;
     state.draft.likes = String(fields.likes.int.value);
     state.draft.playersFound = String(fields.playersFound.int.value);
 
@@ -84,6 +88,24 @@ async function loadSelectedFile() {
   }
 }
 
+function onDragOver(event) {
+  event.preventDefault();
+  el.dropzone.classList.add('dragging');
+}
+
+function onDragLeave(event) {
+  event.preventDefault();
+  el.dropzone.classList.remove('dragging');
+}
+
+async function onDrop(event) {
+  event.preventDefault();
+  el.dropzone.classList.remove('dragging');
+  const file = event.dataTransfer?.files?.[0];
+  if (!file) return;
+  await loadFile(file);
+}
+
 async function copySaveFolderPath() {
   const path = el.saveFolderPath.textContent.trim();
   try {
@@ -96,12 +118,10 @@ async function copySaveFolderPath() {
 
 function getRequiredFields(parsed) {
   const byKey = new Map(parsed.records.map((record) => [record.key, record]));
-  const playerName = byKey.get(FIELD_KEYS.playerName);
   const likes = byKey.get(FIELD_KEYS.likes);
   const playersFound = byKey.get(FIELD_KEYS.playersFound);
 
   const missing = [];
-  if (!playerName) missing.push('player name');
   if (!likes) missing.push('likes received');
   if (!playersFound) missing.push('players found');
 
@@ -109,23 +129,18 @@ function getRequiredFields(parsed) {
     throw new SaveParseError(`This save is missing: ${missing.join(', ')}.`);
   }
 
-  return { playerName, likes, playersFound };
+  return { likes, playersFound };
 }
 
 function renderEditor() {
   el.editorPanel.classList.remove('hidden');
   el.fileName.textContent = state.fileName;
-  el.playerNameInput.value = state.draft.playerName;
   el.likesInput.value = state.draft.likes;
   el.playersFoundInput.value = state.draft.playersFound;
-
-  const length = state.fields.playerName.string.stringByteLength;
-  el.playerNameHint.textContent = `Must stay ${length} characters.`;
   updateActions();
 }
 
 function updateDraftFromInputs() {
-  state.draft.playerName = el.playerNameInput.value;
   state.draft.likes = el.likesInput.value;
   state.draft.playersFound = el.playersFoundInput.value;
   updateActions();
@@ -135,12 +150,6 @@ function collectValidation() {
   if (!state.fields) return { ok: false, errors: ['No save loaded.'] };
 
   const errors = [];
-  const nameLength = state.fields.playerName.string.stringByteLength;
-
-  if (!canWriteStringSameSize(state.fields.playerName, state.draft.playerName)) {
-    errors.push(`Player name must be exactly ${nameLength} characters.`);
-  }
-
   validateWholeNumber(state.draft.likes, 'Likes received', errors);
   validateWholeNumber(state.draft.playersFound, 'Players found', errors);
 
@@ -169,10 +178,6 @@ function updateActions() {
 function collectEdits() {
   const edits = [];
 
-  if (state.draft.playerName !== state.fields.playerName.string.value) {
-    edits.push({ key: FIELD_KEYS.playerName, string: state.draft.playerName });
-  }
-
   const likes = Number(state.draft.likes);
   if (likes !== state.fields.likes.int.value) {
     edits.push({ key: FIELD_KEYS.likes, int: likes });
@@ -194,9 +199,9 @@ function saveEditedFile() {
     if (!validation.ok) throw new SaveParseError(validation.errors.join('\n'));
 
     const result = applyRecordEdits(state.originalBytes, state.parsed, collectEdits());
-    const name = state.fileName.replace(/\.sav$/i, '') + '.edited.sav';
+    const name = state.fileName;
     downloadBytes(result.bytes, name, 'application/octet-stream');
-    setStatus(`Downloaded ${name}. Rename it to ${state.fileName} before replacing the old save.`, 'success');
+    setStatus(`Downloaded ${name}. Paste it into the save folder and replace the old file.`, 'success');
   } catch (error) {
     setStatus(error instanceof Error ? error.message : String(error), 'danger');
   }
@@ -211,7 +216,6 @@ function downloadBackup() {
 function resetDrafts() {
   if (!state.fields) return;
 
-  state.draft.playerName = state.fields.playerName.string.value;
   state.draft.likes = String(state.fields.likes.int.value);
   state.draft.playersFound = String(state.fields.playersFound.int.value);
   renderEditor();
@@ -223,7 +227,6 @@ function resetState() {
   state.originalBytes = null;
   state.parsed = null;
   state.fields = null;
-  state.draft.playerName = '';
   state.draft.likes = '';
   state.draft.playersFound = '';
   el.editorPanel.classList.add('hidden');

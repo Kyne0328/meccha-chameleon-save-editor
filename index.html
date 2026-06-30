@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#0A101C" />
   <title>Meccha Chameleon Save Editor</title>
-  <link rel="icon" type="image/svg+xml" href="/favicon.png" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
   <link rel="stylesheet" href="src/styles.css" />
 </head>
 <body>
@@ -18,7 +18,7 @@
           <h1>Save Editor</h1>
         </div>
       </div>
-      <p class="hero-copy">Edit your player name, likes received, and players found without uploading your save anywhere.</p>
+      <p class="hero-copy">Edit likes received and players found without uploading your save anywhere.</p>
     </section>
 
     <section class="layout-grid">
@@ -27,7 +27,8 @@
           <span class="step-badge">1</span>
           <div>
             <h2>Find your save</h2>
-            <p>Press <kbd>Win</kbd> + <kbd>R</kbd>, paste this folder path, then press Enter.</p>
+            <div class="hotkey-callout"><kbd>Win</kbd><span>+</span><kbd>R</kbd></div>
+            <p>Press the keys above, paste this folder path, then press Enter.</p>
           </div>
         </div>
         <div class="copy-row">
@@ -42,7 +43,7 @@
           </div>
           <div>
             <span>3</span>
-            <p>Edit the values and download the edited save.</p>
+            <p>Edit likes received or players found.</p>
           </div>
           <div>
             <span>4</span>
@@ -78,13 +79,7 @@
             </div>
           </div>
 
-          <div class="fields">
-            <label class="field-card name-field">
-              <span>Player name</span>
-              <input id="playerNameInput" autocomplete="off" />
-              <small id="playerNameHint"></small>
-            </label>
-
+          <div class="fields two-fields">
             <label class="field-card">
               <span>Likes received</span>
               <input id="likesInput" type="number" min="0" step="1" inputmode="numeric" />
