@@ -47,3 +47,7 @@ https://meccha-chameleon-save-editor.vercel.app/
 - 🛟 Keep a backup before replacing your save.
 - ☁️ Staying on the main page lets the game finish cloud download first. After patching, finding a hider forces the game to save the patched local file.
 - 🚫 Direct browser saving may be blocked because the save is inside `%LOCALAPPDATA%`, so this editor uses the safer download-and-replace method.
+
+## See also
+
+- [Meccha Chameleon Atlas](https://mecchachameleon.art/) — Fan-maintained hide-spots reference, paint-match notes, and seeker counter-tips for the paint-based hide-and-seek game Meccha Chameleon. Unofficial, not affiliated with the developer.
